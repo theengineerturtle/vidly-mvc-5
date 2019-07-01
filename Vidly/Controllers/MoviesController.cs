@@ -4,12 +4,24 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Vidly.Models;
+using System.Data.Entity;
 //using Vidly.ViewModels;
 
 namespace Vidly.Controllers
 {
     public class MoviesController : Controller
     {
+        private ApplicationDbContext _contex;
+
+        public MoviesController()
+        {
+            _contex = new ApplicationDbContext();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _contex.Dispose();
+        }
         // GET: Movies
         //public ActionResult Random()
         //{
@@ -38,15 +50,23 @@ namespace Vidly.Controllers
 
         public ActionResult Index()
         {
-            IEnumerable<Movie> movies = new List<Movie>()
-            {
-                new Movie{Id=1,Name="Shrek!"},
-                new Movie{Id=2,Name="Wall-e"}
-            };
-
+            var movies = _contex.Movies.Include(c=>c.Genre).ToList();
+          
             return View(movies);
         }
 
+
+        public ActionResult Details(int id)
+        {
+            var movie = _contex.Movies.Include(c=>c.Genre).SingleOrDefault(m => m.Id == id);
+
+            if(movie == null)
+            {
+                return HttpNotFound();
+            }
+
+            return View(movie);
+        }
 
         //public ActionResult Edit(int id)
         //{
